@@ -331,7 +331,7 @@ class XiamiWebAPI(object):
             sys.exit()
 
         return resp
-0
+
     def _make_song(self, info):
         song = Song()
 
