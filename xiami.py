@@ -331,7 +331,7 @@ class XiamiWebAPI(object):
             sys.exit()
 
         return resp
-
+0
     def _make_song(self, info):
         song = Song()
 
@@ -779,6 +779,7 @@ class xiami(object):
         xml = self._request(url).content
         t = re.search('<lyric>(http.+?)</lyric>', xml)
         if not t: return None
+        print t
         lyric_url = t.group(1)
         data = self._request(lyric_url).content.replace('\r\n', '\n')
         data = lyric_parser(data)
