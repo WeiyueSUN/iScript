@@ -18,6 +18,7 @@ import select
 from mutagen.id3 import ID3,TRCK,TIT2,TALB,TPE1,APIC,TDRC,COMM,TPOS,USLT
 from HTMLParser import HTMLParser
 from bs4 import BeautifulSoup
+import pickle as pkl
 
 url_song = "http://www.xiami.com/song/%s"
 url_album = "http://www.xiami.com/album/%s"
@@ -159,9 +160,25 @@ class Song(object):
         return setattr(self, key, value)
 
     def feed(self, **kwargs):
+        def dump_lyric(song_id):
+            try:
+                url = 'http://www.xiami.com/song/%s' % song_id
+                xml = self._request(url).content
+                trans = BeautifulSoup(xml)
+                print trans.find_all(attrs='lrc_main')[0]
+                with open('xml_lyric.pkl', 'rb') as xml_save_file:
+                    xmls = pkl.load(xml_save_file)
+                xmls.append([song_id, xml])
+                with open('xml_lyric.pkl', 'wb') as xml_save_file:
+                    pkl.dump(xmls, xml_save_file)
+                print 'save lyric %s' % song_id
+            except Exception as e:
+                print e
+
         for name, value in kwargs.items():
             setattr(self, name, value)
-
+            if name == 'song_id':
+                dump_lyric(value)
 
 class XiamiH5API(object):
 
@@ -937,7 +954,7 @@ class xiami(object):
         if not song:
             return []
             
-        self.get_lyric_from_song(song)
+        #self.get_lyric_from_song(song)
         self.make_file_name(song)
         return [song]
 
@@ -1006,7 +1023,7 @@ class xiami(object):
             self.disc_description_archives = {}
             n += 1
 
-    def download_artist_albums(self):
+-    def download_artist_albums(self):
         ii = 1
         album_ids = []
         while True:
