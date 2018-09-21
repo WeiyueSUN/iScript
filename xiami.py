@@ -160,26 +160,8 @@ class Song(object):
         return setattr(self, key, value)
 
     def feed(self, **kwargs):
-        def dump_lyric(song_id):
-            try:
-                print 'try save lyric %s' % song_id
-                url = 'http://www.xiami.com/song/%s' % song_id
-                xml = self._request(url).content
-                trans = BeautifulSoup(xml)
-                print trans.find_all(attrs='lrc_main')[0]
-                with open('xml_lyric.pkl', 'rb') as xml_save_file:
-                    xmls = pkl.load(xml_save_file)
-                xmls.append([song_id, xml])
-                with open('xml_lyric.pkl', 'wb') as xml_save_file:
-                    pkl.dump(xmls, xml_save_file)
-                print 'save lyric %s' % song_id
-            except Exception as e:
-                print e
-
         for name, value in kwargs.items():
             setattr(self, name, value)
-            if name == 'song_id':
-                dump_lyric(value)
 
 class XiamiH5API(object):
 
@@ -213,6 +195,23 @@ class XiamiH5API(object):
         params.update(kwargs)
         return params
 
+    def dump_lyric(song):
+        try:
+            song_id = song.song_id
+            print 'try save lyric %s' % song_id
+            url = 'http://www.xiami.com/song/%s' % song_id
+            xml = self._request(url).content
+            trans = BeautifulSoup(xml)
+            print trans.find_all(attrs='lrc_main')[0]
+            with open('xml_lyric.pkl', 'rb') as xml_save_file:
+                xmls = pkl.load(xml_save_file)
+            xmls.append([song_id, xml])
+            with open('xml_lyric.pkl', 'wb') as xml_save_file:
+                pkl.dump(xmls, xml_save_file)
+            print 'save lyric %s' % song_id
+        except Exception as e:
+            print e
+
     def song(self, song_id):
         params = self._make_params(id=song_id, r='song/detail')
         url = self.URL
@@ -232,6 +231,7 @@ class XiamiH5API(object):
             album_pic_url=pic_url,
             comment='http://www.xiami.com/song/' + str(info['song_id'])
         )
+        self.dump_lyric(song)
         return song
 
     def album(self, album_id):
@@ -261,6 +261,7 @@ class XiamiH5API(object):
                 comment='http://www.xiami.com/song/' + str(info_n['song_id'])
             )
             songs.append(song)
+            self.dump_lyric(song)
         return songs
 
     def collect(self, collect_id):
