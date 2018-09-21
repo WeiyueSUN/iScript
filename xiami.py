@@ -368,24 +368,6 @@ class XiamiWebAPI(object):
             location=info['location'],
             location_url=durl
         )
-
-        def dump_lyric(song_id):
-            try:
-                print 'try save lyric %s' % song_id
-                url = 'http://www.xiami.com/song/%s' % song_id
-                xml = self._request(url).content
-                trans = BeautifulSoup(xml)
-                print trans.find_all(attrs='lrc_main')[0]
-                with open('xml_lyric.pkl', 'rb') as xml_save_file:
-                    xmls = pkl.load(xml_save_file)
-                xmls.append([song_id, xml])
-                with open('xml_lyric.pkl', 'wb') as xml_save_file:
-                    pkl.dump(xmls, xml_save_file)
-                print 'save lyric %s' % song_id
-            except Exception as e:
-                print e
-
-        dump_lyric(info['song_id'])
         return song
 
     def _find_z(self, album):
@@ -935,6 +917,24 @@ class xiami(object):
         else:
             song['file_name'] = file_name
 
+    def dump_lyric(song):
+        try:
+            song_id = song.song_id
+            filename = song.file_name
+            print 'try save lyric %s' % song_id
+            url = 'http://www.xiami.com/song/%s' % song_id
+            xml = self._request(url).content
+            trans = BeautifulSoup(xml)
+            print trans.find_all(attrs='lrc_main')[0]
+            with open('xml_lyric.pkl', 'rb') as xml_save_file:
+                xmls = pkl.load(xml_save_file)
+            xmls.append([song_id, filename, xml])
+            with open('xml_lyric.pkl', 'wb') as xml_save_file:
+                pkl.dump(xmls, xml_save_file)
+            print 'save lyric %s' % song_id
+        except Exception as e:
+            print e
+
     def get_songs(self, album_id, song_id=None):
         songs = self._api.album(album_id)
 
@@ -944,6 +944,7 @@ class xiami(object):
         cd_serial_auth = int(songs[-1]['cd_serial']) > 1
         for song in songs:
             self.make_file_name(song, cd_serial_auth=cd_serial_auth)
+            self.dump_lyric(song)
 
         songs = [i for i in songs if i['song_id'] == song_id] \
                  if song_id else songs
@@ -954,9 +955,9 @@ class xiami(object):
 
         if not song:
             return []
-            
-        #self.get_lyric_from_song(song)
+
         self.make_file_name(song)
+        self.dump_lyric(song)
         return [song]
 
     def download_song(self):
