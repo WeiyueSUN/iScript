@@ -924,6 +924,7 @@ class xiami(object):
             print 'try save lyric %s' % song_id
             url = 'http://www.xiami.com/song/%s' % song_id
             xml = self._request(url).content
+            time.sleep(5)
             trans = BeautifulSoup(xml)
             print trans.find_all(attrs='lrc_main')[0]
             with open('xml_lyric.pkl', 'rb') as xml_save_file:
@@ -935,8 +936,23 @@ class xiami(object):
         except Exception as e:
             print e
 
+    def record_song_id(self, song):
+        song_id = song.song_id
+        print 'try save song id %s' % song_id
+        with open('song_id.pkl', 'rb') as data_save_file:
+            data = pkl.load(data_save_file)
+        data.append([song_id, song.singers, song.song_name, song.artist_id, song.artist_name])
+        with open('song_id.pkl', 'wb') as data_save_file:
+            pkl.dump(data, data_save_file)
+        print 'song id saved %s' % song_id
+
     def get_songs(self, album_id, song_id=None):
-        songs = self._api.album(album_id)
+        try:
+            songs = self._api.album(album_id)
+        except Exception as e:
+            print e
+            return []
+
 
         if not songs:
             return []
@@ -944,7 +960,8 @@ class xiami(object):
         cd_serial_auth = int(songs[-1]['cd_serial']) > 1
         for song in songs:
             self.make_file_name(song, cd_serial_auth=cd_serial_auth)
-            self.dump_lyric(song)
+            #self.dump_lyric(song)
+            self.record_song_id(song)
 
         songs = [i for i in songs if i['song_id'] == song_id] \
                  if song_id else songs
@@ -957,7 +974,8 @@ class xiami(object):
             return []
 
         self.make_file_name(song)
-        self.dump_lyric(song)
+        #self.dump_lyric(song)
+        self.record_song_id(song)
         return [song]
 
     def download_song(self):
@@ -988,7 +1006,7 @@ class xiami(object):
         songs = songs[args.from_ - 1:]
         print(s % (2, 97, u'\n  >> ' + amount_songs + u' 首歌曲将要下载.')) \
             if not args.play else ''
-        self.download(songs, amount_songs, args.from_)
+        #self.download(songs, amount_songs, args.from_)
 
     def download_collect(self):
         page = 1
