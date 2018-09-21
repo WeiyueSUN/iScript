@@ -162,6 +162,7 @@ class Song(object):
     def feed(self, **kwargs):
         def dump_lyric(song_id):
             try:
+                print 'try save lyric %s' % song_id
                 url = 'http://www.xiami.com/song/%s' % song_id
                 xml = self._request(url).content
                 trans = BeautifulSoup(xml)
