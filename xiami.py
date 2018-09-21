@@ -917,7 +917,7 @@ class xiami(object):
         else:
             song['file_name'] = file_name
 
-    def dump_lyric(song):
+    def dump_lyric(self, song):
         try:
             song_id = song.song_id
             filename = song.file_name
