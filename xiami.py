@@ -1023,7 +1023,7 @@ class xiami(object):
             self.disc_description_archives = {}
             n += 1
 
--    def download_artist_albums(self):
+-   def download_artist_albums(self):
         ii = 1
         album_ids = []
         while True:
